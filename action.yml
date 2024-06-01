@@ -1,0 +1,18 @@
+name: 'Update Version'
+description: 'Allows to increase the version of the corresponding files'
+inputs:
+  application_type:
+    description: 'You can use maven'
+    required: true
+    default: 'maven'
+  update_version_mode:
+    description: 'Un ejemplo de input'
+    required: true
+    #default: 'patch'
+  path:
+    description: 'Reference directory or file'
+    required: true
+    default: '.'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
