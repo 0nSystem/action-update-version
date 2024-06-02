@@ -1,7 +1,9 @@
 import {ApplicationType, Command, UpdateVersionMode, VersionedFileData} from '@action-update-version/model';
 import * as fs from 'fs';
-import {scan_paths_and_filter_by_file_name} from "@action-update-version/fs";
+import {scan_paths_and_filter_by_file_name} from "@action-update-version/custom_fs";
 import github from "@actions/github";
+import * as core from "@actions/core";
+import {error} from "@actions/core";
 
 const target_file_application = {
     maven: "pom.xml",
@@ -19,7 +21,9 @@ const REGEX_TAKE_VERSION_DATA = /^(\d+)\.(\d+)\.(\d+)(?:-.*)?$/
 async function execute_process(command: Command) {
     const target = target_file_application[command.application_type];
     const path_files = scan_paths_and_filter_by_file_name(command.path, target);
+
     for (const path of path_files) {
+        core.debug(`Changing file: ${path}`);
         const content = fs.readFileSync(path, 'utf-8');
         const new_content = await generate_new_content(content, command.application_type, command.update_version_mode)
         fs.writeFileSync(path, new_content, 'utf-8');
@@ -33,20 +37,28 @@ export async function generate_new_content(
     application_type: ApplicationType,
     update_version_mode: UpdateVersionMode
 ) {
+    core.debug(`Generating new version with content: ${content}`);
+    core.debug(`Generating new version application_type: ${application_type}`);
+    core.debug(`Generating new version mode: ${update_version_mode}`);
     const fn_get_version_file_content = get_version_file_data_by_application[application_type];
     const fn_create_new_content = create_new_content[application_type];
 
-    //TODO create funtion to create packagename todo show if example with maven is "<group>+<artifactId>"
+    const versioned_file_data = fn_get_version_file_content(content);
+    core.debug(`VersionedFileData Version Detected: ${versioned_file_data.version}`);
+    core.debug(`VersionedFileData Package Detected: ${versioned_file_data.package_name}`);
 
-    const version = fn_get_version_file_content(content);
-    const new_version = await generate_new_version(version, update_version_mode);
-    return fn_create_new_content(content, new_version);
+    const new_version = await generate_new_version(versioned_file_data, update_version_mode);
+    core.debug(`New version: ${new_version}`);
+
+    const new_content_file = fn_create_new_content(content, new_version);
+    core.debug(`New Content File: ${new_content_file}`);
+    return new_content_file;
 }
 
 
 export async function generate_new_version(versionated_file_data: VersionedFileData, update_version_mode: UpdateVersionMode): Promise<string> {
     const matcher = versionated_file_data.version.match(REGEX_TAKE_VERSION_DATA);
-
+    //TODO now require format X.X.X*,
     if (matcher) {
 
         switch (update_version_mode) {
@@ -63,6 +75,7 @@ export async function generate_new_version(versionated_file_data: VersionedFileD
         }
 
     }
+    core.setFailed("Error matcher to modify version version format.");
     return Promise.reject()
     //throw "Error not found version";
 }
