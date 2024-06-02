@@ -58,7 +58,8 @@ export async function generate_new_version(versionated_file_data: VersionedFileD
                 return Promise.resolve(`${matcher[1]}.${matcher[2]}.${parseInt(matcher[3]) + 1}`)
             case "pr-snapshot":
                 await generate_version_pr_snapshot(versionated_file_data, "maven") //TODO
-                throw `pr-snapshot not implemented`
+                //throw `pr-snapshot not implemented`
+                return Promise.resolve("example")
         }
 
     }
@@ -75,13 +76,15 @@ async function generate_version_pr_snapshot(versionated_file_data: VersionedFile
         const token = github_pr_data.token; //TODO token is correct?
 
         //TODO change to user and organization
-        const a = await github.getOctokit(token).rest.packages.getPackageForOrganization({
+        const a = await github.getOctokit(token).rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
             org: context.repo.owner,
-            package_type: "maven",
-            package_name: versionated_file_data.package_name
+            package_type: application_type,
+            package_name: versionated_file_data.package_name,
         })
 
-        return Promise.resolve("")
+        console.log(a.data)
+
+        return Promise.resolve("mock_data")
     } else {
         //throw "Mode update version pr-snapshot require execute in PR"
         return Promise.reject();
@@ -118,9 +121,9 @@ function get_versionated_file_data_maven(content_file: string): VersionedFileDat
     }
 
     let groupId;
-    if(json_content.project.groupId){
+    if (json_content.project.groupId) {
         groupId = json_content.project.groupId._text;
-    }else{
+    } else {
         groupId = json_content.project.parent.groupId._text;
     }
 

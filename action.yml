@@ -2,11 +2,11 @@ name: 'Update Version'
 description: 'Allows to increase the version of the corresponding files'
 inputs:
   application_type:
-    description: 'You can use maven'
+    description: 'Type Application: maven'
     required: true
     default: 'maven'
   update_version_mode:
-    description: 'Un ejemplo de input'
+    description: 'Type update version: major|minor|patch|pr-snapshot'
     required: true
     #default: 'patch'
   path:

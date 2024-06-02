@@ -1,29 +1,18 @@
 import * as core from '@actions/core';
 import execute_process from "@action-update-version/proccess";
-import {Model} from "@action-update-version/model";
+import {Command} from "@action-update-version/model";
 
 async function run() {
     try {
-        //const command = build_command();
+        const command = build_command();
 
-        //execute_process(command);
-
-        /*
-        const nameToGreet = core.getInput('exampleInput');
-        console.log(`Hello ${nameToGreet}!`);
-        const time = (new Date()).toTimeString();
-        core.setOutput('time', time);
-        // Puedes acceder al contexto del evento de GitHub Actions así:
-        const context = github.context;
-        console.log(`El evento es: ${context.eventName}`);
-         */
-
+        await execute_process(command);
     } catch (error) {
         core.setFailed(`Action failed with error ${error}`);
     }
 }
 
-function build_command(): Model {
+function build_command(): Command {
     return {
         application_type: parse_params_input_action('application_type'),
         update_version_mode: parse_params_input_action('update_version_mode'),

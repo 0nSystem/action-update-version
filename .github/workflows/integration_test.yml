@@ -1,0 +1,32 @@
+name: Integration Test
+on: [ pull_request, pull_request_review ]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Exec npm install
+        run: npm install
+
+      - name: Exec npm build
+        run: npm run build
+
+      - name: Exec npm install
+        run: npm test
+
+      - name: Exec action maven
+        uses: ./
+        with:
+          application_type: maven
+          update_version_mode: minor
+          path: "./test_projects/ExampleMavenProject"
+
+
+
