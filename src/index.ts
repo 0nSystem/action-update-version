@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import execute_process from "@action-update-version/proccess";
-import {Command} from "@action-update-version/command";
+import {Model} from "@action-update-version/model";
 
 async function run() {
     try {
@@ -23,7 +23,7 @@ async function run() {
     }
 }
 
-function build_command(): Command {
+function build_command(): Model {
     return {
         application_type: parse_params_input_action('application_type'),
         update_version_mode: parse_params_input_action('update_version_mode'),

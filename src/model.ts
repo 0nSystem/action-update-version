@@ -1,6 +1,3 @@
-
-
-
 export type ApplicationType = "maven";
 
 export type UpdateVersionMode = "major" | "minor" | "patch" | "pr-snapshot";
@@ -12,3 +9,8 @@ export interface Command {
     path: string
 }
 
+
+export interface VersionedFileData {
+    version: string,
+    package_name: string,
+}
