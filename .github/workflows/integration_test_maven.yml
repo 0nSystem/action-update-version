@@ -1,8 +1,14 @@
 name: Integration Test Maven
-on: [ pull_request, pull_request_review ]
+
+on:
+  [ pull_request, pull_request_review ]
+
 jobs:
-  update_path_version:
+  update_version:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version_mode: [patch, minor, major]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -18,46 +24,12 @@ jobs:
       - name: Exec npm build
         run: npm run build
 
-      - name: Exec npm install
-        run: npm test
-
       - name: Exec action maven
         uses: ./
         with:
           application_type: maven
-          update_version_mode: path
+          update_version_mode: ${{ matrix.version_mode }}
           path: "test_projects/ExampleMavenProject"
+
       - name: Show new content pom.xml
         run: cat 'test_projects/ExampleMavenProject/pom.xml'
-
-  update_minor_version:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Configure Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.11.0'
-
-      - name: Exec npm install
-        run: npm install
-
-      - name: Exec npm build
-        run: npm run build
-
-      - name: Exec npm install
-        run: npm test
-
-      - name: Exec action maven
-        uses: ./
-        with:
-          application_type: maven
-          update_version_mode: minor
-          path: "test_projects/ExampleMavenProject"
-      - name: Show new content pom.xml
-        run: cat 'test_projects/ExampleMavenProject/pom.xml'
-
-
-
