@@ -1,0 +1,35 @@
+name: Integration Test Maven
+
+on:
+  [ pull_request, pull_request_review ]
+
+jobs:
+  update_version:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version_mode: [patch, minor, major]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.0'
+
+      - name: Exec npm install
+        run: npm install
+
+      - name: Exec npm build
+        run: npm run build
+
+      - name: Exec action maven
+        uses: ./
+        with:
+          application_type: maven
+          update_version_mode: ${{ matrix.version_mode }}
+          path: "test_projects/ExampleMavenProject"
+
+      - name: Show new content pom.xml
+        run: cat 'test_projects/ExampleMavenProject/pom.xml'
