@@ -11,6 +11,13 @@
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/0nSystem/action-update-version</url>
+        </repository>
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin><!-- Use latest to build recent Java applications -->
