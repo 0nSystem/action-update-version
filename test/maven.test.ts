@@ -41,9 +41,28 @@ test('Test update version maven patch', async () => {
     expect(new_content_patch_version).toEqual(pom_0_0_2)
 });
 
+jest.mock('@actions/github', () => ({
+    context: {
+        payload: {
+            pull_request: {
+                number: 1,
+            },
+        },
+    },
+}));
+test('Test update version maven pr snapshot', async () => {
+    const new_content_snapshot_version_pr_1_1 = await generate_new_content(pom_0_0_1_snapshot, "maven", "pr-snapshot");
+    expect(new_content_snapshot_version_pr_1_1).toEqual(pom_0_0_1_snapshot_pr_1_1)
+    const new_content_snapshot_version_pr_1_2 = await generate_new_content(pom_0_0_1_snapshot_pr_1_1, "maven", "pr-snapshot");
+    expect(new_content_snapshot_version_pr_1_2).toEqual(pom_0_0_1_snapshot_pr_1_2)
+
+    const new_content_snapshot_version_pr_1_1_by_pr_34 = await generate_new_content(pom_0_0_1_snapshot_pr_34_1, "maven", "pr-snapshot");
+    expect(new_content_snapshot_version_pr_1_1_by_pr_34).toEqual(new_content_snapshot_version_pr_1_1)
+
+})
+
 const pom_0_0_1_snapshot = '<?xml version="1.0" encoding="UTF-8"?>\n' +
-    '<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n' +
-    '         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">\n' +
+    '<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">\n' +
     '    <modelVersion>4.0.0</modelVersion>\n' +
     '    <groupId>com.onsystem</groupId>\n' +
     '    <artifactId>example-artifact</artifactId>\n' +
@@ -96,6 +115,56 @@ const pom_0_1_0 = '<?xml version="1.0" encoding="UTF-8"?>\n' +
     '    <groupId>com.onsystem</groupId>\n' +
     '    <artifactId>example-artifact</artifactId>\n' +
     '    <version>0.1.0</version>\n' +
+    '    <name>example</name>\n' +
+    '    <description>example_code</description>\n' +
+    '    <properties>\n' +
+    '        <java.version>21</java.version>\n' +
+    '    </properties>\n' +
+    '    <dependencies/>\n' +
+    '    <build>\n' +
+    '        <plugins/>\n' +
+    '    </build>\n' +
+    '</project>'
+
+const pom_0_0_1_snapshot_pr_1_1 = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">\n' +
+    '    <modelVersion>4.0.0</modelVersion>\n' +
+    '    <groupId>com.onsystem</groupId>\n' +
+    '    <artifactId>example-artifact</artifactId>\n' +
+    '    <version>0.0.1-SNAPSHOT-PR1+1</version>\n' +
+    '    <name>example</name>\n' +
+    '    <description>example_code</description>\n' +
+    '    <properties>\n' +
+    '        <java.version>21</java.version>\n' +
+    '    </properties>\n' +
+    '    <dependencies/>\n' +
+    '    <build>\n' +
+    '        <plugins/>\n' +
+    '    </build>\n' +
+    '</project>'
+const pom_0_0_1_snapshot_pr_1_2 = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">\n' +
+    '    <modelVersion>4.0.0</modelVersion>\n' +
+    '    <groupId>com.onsystem</groupId>\n' +
+    '    <artifactId>example-artifact</artifactId>\n' +
+    '    <version>0.0.1-SNAPSHOT-PR1+2</version>\n' +
+    '    <name>example</name>\n' +
+    '    <description>example_code</description>\n' +
+    '    <properties>\n' +
+    '        <java.version>21</java.version>\n' +
+    '    </properties>\n' +
+    '    <dependencies/>\n' +
+    '    <build>\n' +
+    '        <plugins/>\n' +
+    '    </build>\n' +
+    '</project>'
+
+const pom_0_0_1_snapshot_pr_34_1 = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">\n' +
+    '    <modelVersion>4.0.0</modelVersion>\n' +
+    '    <groupId>com.onsystem</groupId>\n' +
+    '    <artifactId>example-artifact</artifactId>\n' +
+    '    <version>0.0.1-SNAPSHOT-PR34+1</version>\n' +
     '    <name>example</name>\n' +
     '    <description>example_code</description>\n' +
     '    <properties>\n' +
