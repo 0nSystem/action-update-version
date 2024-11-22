@@ -44,5 +44,5 @@ jobs:
       - name: Build and deploy to GitHub Packages
         run: |
           cd test_projects/ExampleMavenProject
-          mvn clean deploy
+          mvn deploy
 
