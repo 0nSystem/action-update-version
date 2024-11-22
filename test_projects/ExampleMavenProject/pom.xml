@@ -11,12 +11,20 @@
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub OWNER Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/0nSystem/action-update-version</url>
+        </repository>
+    </repositories>
     <distributionManagement>
         <repository>
             <id>github</id>
             <url>https://maven.pkg.github.com/0nSystem/action-update-version</url>
         </repository>
     </distributionManagement>
+
 
     <build>
         <plugins>
