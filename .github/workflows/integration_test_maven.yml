@@ -35,15 +35,14 @@ jobs:
         run: cat 'test_projects/ExampleMavenProject/pom.xml'
 
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-
+          server-password: ${{ secrets.GITHUB_TOKEN }}
+          server-username: ${{ github.actor }}
       - name: Build and deploy to GitHub Packages
         run: |
           cd test_projects/ExampleMavenProject
           mvn clean deploy
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
