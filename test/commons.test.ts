@@ -59,3 +59,33 @@ test('Test generate new version patch', async () => {
     expect(new_version_2).toEqual("0.0.2");
     expect(new_version_3).toEqual("0.0.2");
 });
+
+
+jest.mock('@actions/github', () => ({
+    context: {
+        payload: {
+            pull_request: {
+                number: 1,
+            },
+        },
+    },
+}));
+test('Test generate new version snapshot version', async () => {
+    const new_version_1 = await generate_new_version({
+        version: "0.0.1-SNAPSHOT",
+        package_name: ""
+    }, "pr-snapshot");
+    const new_version_pr_1_1 = await generate_new_version({
+        version: "0.0.1-SNAPSHOT-PR1+1",
+        package_name: ""
+    }, "pr-snapshot");
+    const new_version_pr_34 = await generate_new_version({
+        version: "0.0.1-SNAPSHOT-PR34+1",
+        package_name: ""
+    }, "pr-snapshot");
+
+    expect(new_version_1).toEqual("0.0.1-SNAPSHOT-PR1+1");
+    expect(new_version_pr_1_1).toEqual("0.0.1-SNAPSHOT-PR1+2");
+    expect(new_version_pr_34).toEqual("0.0.1-SNAPSHOT-PR1+1");
+})
+

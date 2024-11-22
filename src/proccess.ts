@@ -1,9 +1,8 @@
 import {ApplicationType, Command, UpdateVersionMode, VersionedFileData} from '@action-update-version/model';
 import * as fs from 'fs';
 import {scan_paths_and_filter_by_file_name} from "@action-update-version/custom_fs";
-import github from "@actions/github";
 import * as core from "@actions/core";
-import {error} from "@actions/core";
+import {get_number_pr} from "@action-update-version/github_helper";
 
 const target_file_application = {
     maven: "pom.xml",
@@ -16,7 +15,8 @@ const create_new_content = {
     maven: (content_file: string, version: string): string => generate_new_content_maven(content_file, version),
 }
 
-const REGEX_TAKE_VERSION_DATA = /^(\d+)\.(\d+)\.(\d+)(?:-.*)?$/
+const REGEX_TAKE_VERSION_DATA = /^(\d+)\.(\d+)\.(\d+)(?:-([A-Za-z]+(?:[-_\w+\d]*)?))?(?:-([A-Za-z]+\d*\+\d+))?$/;
+const REGEX_TAKE_SNAPSHOT_PR_VERSION = /SNAPSHOT-PR(\d+)\+(\d+)/
 
 async function execute_process(command: Command) {
     const target = target_file_application[command.application_type];
@@ -60,49 +60,46 @@ export async function generate_new_version(versionated_file_data: VersionedFileD
     const matcher = versionated_file_data.version.match(REGEX_TAKE_VERSION_DATA);
     //TODO now require format X.X.X*,
     if (matcher) {
+        const major_version = parseInt(matcher[1])
+        const minor_version = parseInt(matcher[2])
+        const patch_version = parseInt(matcher[3])
 
         switch (update_version_mode) {
             case "major":
-                return Promise.resolve(`${parseInt(matcher[1]) + 1}.0.0`)
+                return Promise.resolve(`${major_version + 1}.0.0`)
             case "minor":
-                return Promise.resolve(`${matcher[1]}.${parseInt(matcher[2]) + 1}.0`)
+                return Promise.resolve(`${major_version}.${minor_version + 1}.0`)
             case "patch":
-                return Promise.resolve(`${matcher[1]}.${matcher[2]}.${parseInt(matcher[3]) + 1}`)
+                return Promise.resolve(`${major_version}.${minor_version}.${patch_version + 1}`)
             case "pr-snapshot":
-                await generate_version_pr_snapshot(versionated_file_data, "maven") //TODO
-                //throw `pr-snapshot not implemented`
-                return Promise.resolve("example")
+                return get_number_pr().then(pr_number => {
+                    const data_snapshot_pr_version = matcher[4]
+
+                    if (!data_snapshot_pr_version)
+                        return Promise.resolve(`${matcher[1]}.${matcher[2]}.${parseInt(matcher[3])}-SNAPSHOT-PR${pr_number}+1`)
+
+                    const matcher_snapshot_pr_version = data_snapshot_pr_version.match(REGEX_TAKE_SNAPSHOT_PR_VERSION)
+                    //TODO match pr number and compare if not equals set new number pr and starting +1
+                    if (matcher_snapshot_pr_version) {
+                        const current_pr_version = parseInt(matcher_snapshot_pr_version[1]);
+                        const current_increment_pr_version = parseInt(matcher_snapshot_pr_version[2]);
+
+                        if (current_pr_version !== pr_number) {
+                            return Promise.resolve(`${matcher[1]}.${matcher[2]}.${parseInt(matcher[3])}-SNAPSHOT-PR${pr_number}+1`);
+                        }
+
+                        return Promise.resolve(`${matcher[1]}.${matcher[2]}.${parseInt(matcher[3])}-SNAPSHOT-PR${pr_number}+${current_increment_pr_version + 1}`);
+
+                    } else {
+                        return Promise.resolve(`${matcher[1]}.${matcher[2]}.${parseInt(matcher[3])}-SNAPSHOT-PR${pr_number}+1`)
+                    }
+                });
         }
 
     }
     core.setFailed("Error matcher to modify version version format.");
     return Promise.reject()
     //throw "Error not found version";
-}
-
-async function generate_version_pr_snapshot(versionated_file_data: VersionedFileData, application_type: ApplicationType): Promise<string> {
-    const context = github.context;
-    const github_pr_data = github.context.payload.pull_request;
-    if (github_pr_data) {
-        const number_pr = github_pr_data.number;
-
-        const token = github_pr_data.token; //TODO token is correct?
-
-        //TODO change to user and organization
-        const a = await github.getOctokit(token).rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
-            org: context.repo.owner,
-            package_type: application_type,
-            package_name: versionated_file_data.package_name,
-        })
-
-        console.log(a.data)
-
-        return Promise.resolve("mock_data")
-    } else {
-        //throw "Mode update version pr-snapshot require execute in PR"
-        return Promise.reject();
-    }
-
 }
 
 
